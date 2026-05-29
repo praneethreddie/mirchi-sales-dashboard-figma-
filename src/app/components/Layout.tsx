@@ -4,6 +4,8 @@ import {
   Package, Users, FileText, Search, Menu, X, Bell,
   ChevronRight, LogOut, Flame
 } from "lucide-react";
+import { useLanguage } from '../../context/LanguageContext';
+import { t } from '../../lib/translations';
 
 type Module = "dashboard" | "purchase" | "sales" | "payments" | "inventory" | "users" | "logs";
 
@@ -15,19 +17,20 @@ interface LayoutProps {
   onLogout?: () => Promise<void>;
 }
 
-const navItems: { id: Module; label: string; icon: React.ElementType; roles: string[] }[] = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["Admin", "Manager", "Inventory Staff", "Sales Staff"] },
-  { id: "purchase", label: "Purchase / Inflow", icon: ShoppingCart, roles: ["Admin", "Manager", "Inventory Staff"] },
-  { id: "sales", label: "Sales / Dispatch", icon: TrendingUp, roles: ["Admin", "Manager", "Sales Staff"] },
-  { id: "payments", label: "Payments", icon: Wallet, roles: ["Admin", "Manager"] },
-  { id: "inventory", label: "Inventory", icon: Package, roles: ["Admin", "Manager", "Inventory Staff"] },
-  { id: "users", label: "User Management", icon: Users, roles: ["Admin"] },
-  { id: "logs", label: "Activity Logs", icon: FileText, roles: ["Admin"] },
+const navItems: { id: Module; labelKey: string; icon: React.ElementType; roles: string[] }[] = [
+  { id: "dashboard", labelKey: "Dashboard", icon: LayoutDashboard, roles: ["Admin", "Manager", "Staff"] },
+  { id: "purchase", labelKey: "Purchase / Inflow", icon: ShoppingCart, roles: ["Admin", "Manager", "Staff"] },
+  { id: "sales", labelKey: "Sales / Dispatch", icon: TrendingUp, roles: ["Admin", "Manager", "Staff"] },
+  { id: "payments", labelKey: "Payments", icon: Wallet, roles: ["Admin", "Manager"] },
+  { id: "inventory", labelKey: "Inventory", icon: Package, roles: ["Admin", "Manager", "Staff"] },
+  { id: "users", labelKey: "User Management", icon: Users, roles: ["Admin"] },
+  { id: "logs", labelKey: "Activity Logs", icon: FileText, roles: ["Admin", "Manager", "Staff"] },
 ];
 
 export function Layout({ activeModule, onNavigate, children, currentUser, onLogout }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const { lang, setLang } = useLanguage();
   const allowedItems = navItems.filter(item => item.roles.includes(currentUser.role));
 
   return (
@@ -79,7 +82,7 @@ export function Layout({ activeModule, onNavigate, children, currentUser, onLogo
                 }`}
               >
                 <Icon size={17} />
-                <span>{item.label}</span>
+                <span>{t(item.labelKey, lang)}</span>
                 {active && <ChevronRight size={14} className="ml-auto" />}
               </button>
             );
@@ -132,7 +135,17 @@ export function Layout({ activeModule, onNavigate, children, currentUser, onLogo
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive" />
             </button>
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-sm font-medium">
-              <span className="text-muted-foreground">{navItems.find(n => n.id === activeModule)?.label}</span>
+              <span className="text-muted-foreground">{t(navItems.find(n => n.id === activeModule)?.labelKey || '', lang)}</span>
+            </div>
+
+            <div className="flex items-center gap-2 ml-2">
+              <button
+                title="Change language"
+                onClick={() => setLang(lang === 'en' ? 'te' : 'en')}
+                className="px-2 py-1 rounded-md hover:bg-muted"
+              >
+                {lang === 'en' ? 'TE' : 'EN'}
+              </button>
             </div>
           </div>
         </header>

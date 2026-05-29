@@ -2,6 +2,9 @@ import { useState } from "react";
 import { FileText, Search, Filter, ChevronDown } from "lucide-react";
 import { activityLogs, users } from "./data/mockData";
 import { activityLogger } from "../../lib/activityLogger";
+import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { t } from '../../lib/translations';
 
 const MODULE_COLORS: Record<string, string> = {
   Sales: "bg-green-100 text-green-700",
@@ -35,6 +38,9 @@ export function ActivityLogs() {
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
   // Load logs on mount
+  const { user } = useAuth();
+  const { lang } = useLanguage();
+
   const [logs] = useState(() => {
     activityLogger.loadLogs();
     const dbLogs = activityLogger.getLogs();
@@ -42,7 +48,10 @@ export function ActivityLogs() {
     return [...dbLogs, ...activityLogs];
   });
 
+  // Apply filters and role-based restrictions
   const filtered = logs.filter(log => {
+    // Staff should only see their own logs
+    if (user?.role === 'Staff' && log.userId !== user.id) return false;
     if (moduleFilter !== "All" && log.module !== moduleFilter) return false;
     if (userFilter !== "All" && log.userId !== userFilter) return false;
     if (actionFilter !== "All" && log.action !== actionFilter) return false;
@@ -78,25 +87,27 @@ export function ActivityLogs() {
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card">
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card">
           <Search size={15} className="text-muted-foreground shrink-0" />
           <input
-            placeholder="Search logs by user or description…"
+            placeholder={t('Search logs by user or description…', lang)}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
 
-        <select value={userFilter} onChange={e => setUserFilter(e.target.value)}
-          className="px-3 py-2 rounded-lg border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30">
-          <option value="All">All Users</option>
-          {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-        </select>
+        {user?.role !== 'Staff' ? (
+          <select value={userFilter} onChange={e => setUserFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30">
+            <option value="All">{t('All Users', lang)}</option>
+            {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+          </select>
+        ) : null}
 
         <select value={actionFilter} onChange={e => setActionFilter(e.target.value)}
           className="px-3 py-2 rounded-lg border border-border bg-card text-sm outline-none focus:ring-2 focus:ring-primary/30">
-          <option value="All">All Actions</option>
+          <option value="All">{t('All Actions', lang)}</option>
           {["Created", "Updated", "Deleted", "Viewed", "Login"].map(a => (
             <option key={a} value={a}>{a}</option>
           ))}
@@ -115,7 +126,7 @@ export function ActivityLogs() {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <FileText size={32} className="mb-3 opacity-30" />
-            <p className="text-sm">No logs match your filters</p>
+            <p className="text-sm">{t('No logs match your filters', lang)}</p>
           </div>
         ) : (
           <div className="divide-y divide-border">

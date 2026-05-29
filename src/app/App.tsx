@@ -9,6 +9,7 @@ import { UserManagement } from "./components/UserManagement";
 import { ActivityLogs } from "./components/ActivityLogs";
 import { LoginPage } from "./components/LoginPage";
 import { AuthProvider, useAuth } from "../context/AuthContext";
+import { LanguageProvider } from "../context/LanguageContext";
 
 type Module = "dashboard" | "purchase" | "sales" | "payments" | "inventory" | "users" | "logs";
 
@@ -52,8 +53,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
