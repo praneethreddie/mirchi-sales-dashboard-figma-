@@ -18,28 +18,37 @@ function mapRole(role: string | undefined, fallback: AuthUser["role"]): AuthUser
   const normalized = (role || "").toLowerCase();
   if (normalized === "admin") return "Admin";
   if (normalized === "manager") return "Manager";
+  if (normalized === "inventory staff") return "Inventory Staff";
+  if (normalized === "sales staff") return "Sales Staff";
+  if (normalized === "viewer") return "Viewer";
   return fallback;
 }
 
-async function hydrateAuthUser(user: { id: string; email?: string | null; created_at?: string; user_metadata?: Record<string, unknown> }): Promise<AuthUser> {
-  const fallbackOrganizationId = (user.user_metadata?.organizationId as string | undefined) || "org_default";
-  const fallbackOrganizationName = (user.user_metadata?.organizationName as string | undefined) || "Default Org";
-  const fallbackRole = mapRole(user.user_metadata?.role as string | undefined, "Staff");
-  const fallbackName = (user.user_metadata?.name as string | undefined) || user.email?.split("@")[0] || "User";
+async function hydrateAuthUser(user: { id: string; email?: string | null; created_at?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown> }): Promise<AuthUser> {
+  const fallbackOrganizationId = (user.app_metadata?.organizationId as string | undefined) || "org_default";
+  const fallbackOrganizationName = (user.app_metadata?.organizationName as string | undefined) || (user.user_metadata?.organizationName as string | undefined) || "Default Org";
+  const fallbackRole = mapRole((user.app_metadata?.role as string | undefined) || (user.user_metadata?.role as string | undefined), "Staff");
+  const fallbackName = (user.user_metadata?.name as string | undefined) || (user.app_metadata?.name as string | undefined) || user.email?.split("@")[0] || "User";
 
   try {
     const { data, error } = await supabase
       .from("user_profiles")
-      .select("organization_id, full_name, role")
+      .select("organization_id, full_name, role, email")
       .eq("id", user.id)
       .maybeSingle();
 
     if (!error && data) {
+      const { data: organizationRow } = await supabase
+        .from("organizations")
+        .select("name")
+        .eq("id", data.organization_id)
+        .maybeSingle();
+
       return {
         id: user.id,
-        email: user.email || "",
+        email: data.email || user.email || "",
         organizationId: data.organization_id,
-        organizationName: fallbackOrganizationName,
+        organizationName: organizationRow?.name || fallbackOrganizationName,
         role: mapRole(data.role, fallbackRole),
         name: data.full_name || fallbackName,
         createdAt: user.created_at || new Date().toISOString(),
@@ -113,15 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
 
       if (data.user) {
-        const authUser: AuthUser = {
-          id: data.user.id,
-          email: data.user.email || "",
-          organizationId: data.user.user_metadata?.organizationId || "org_default",
-          organizationName: data.user.user_metadata?.organizationName || "Default Org",
-          role: data.user.user_metadata?.role || "Staff",
-          name: data.user.user_metadata?.name || data.user.email?.split("@")[0] || "User",
-          createdAt: data.user.created_at || new Date().toISOString(),
-        };
+        const authUser = await hydrateAuthUser(data.user);
         setUser(authUser);
         setOrganizationId(authUser.organizationId);
       }
@@ -156,7 +157,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             name,
             organizationName,
             role: "Admin",
-            organizationId: "org_" + Math.random().toString(36).substring(7),
           },
         },
       });

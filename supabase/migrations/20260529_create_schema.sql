@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS email_verifications (
 CREATE TABLE IF NOT EXISTS user_profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  email VARCHAR(255),
   full_name VARCHAR(255),
   phone_number VARCHAR(20),
   avatar_url TEXT,
@@ -60,7 +61,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   last_login_ip VARCHAR(50),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT valid_role CHECK (role IN ('admin', 'manager', 'staff', 'viewer'))
+  CONSTRAINT valid_role CHECK (role IN ('admin', 'manager', 'staff', 'viewer', 'inventory staff', 'sales staff'))
 );
 
 -- Create suppliers table
@@ -218,6 +219,83 @@ CREATE TABLE IF NOT EXISTS organization_invitations (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Bootstrap helper for freshly created users and organizations
+CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
+AS $$
+DECLARE
+  organization_name_value text;
+  organization_slug_value text;
+  organization_role text;
+  organization_id_value uuid;
+BEGIN
+  organization_id_value := NULLIF(COALESCE(NEW.raw_user_meta_data->>'organizationId', NEW.raw_app_meta_data->>'organizationId', ''), '')::uuid;
+  organization_name_value := COALESCE(NEW.raw_user_meta_data->>'organizationName', NEW.raw_app_meta_data->>'organizationName', 'Default Org');
+  organization_slug_value := COALESCE(NEW.raw_user_meta_data->>'organizationSlug', NEW.raw_app_meta_data->>'organizationSlug', lower(regexp_replace(organization_name_value, '[^a-zA-Z0-9]+', '-', 'g')));
+  organization_role := lower(COALESCE(NEW.raw_user_meta_data->>'role', NEW.raw_app_meta_data->>'role', 'staff'));
+
+  IF organization_id_value IS NULL THEN
+    INSERT INTO public.organizations (name, slug, owner_id)
+    VALUES (organization_name_value, organization_slug_value || '-' || substr(NEW.id::text, 1, 8), NEW.id)
+    RETURNING id INTO organization_id_value;
+  END IF;
+
+  IF organization_id_value IS NULL THEN
+    SELECT id INTO organization_id_value
+    FROM public.organizations
+    WHERE owner_id = NEW.id
+    ORDER BY created_at DESC
+    LIMIT 1;
+  END IF;
+
+  INSERT INTO public.user_profiles (
+    id,
+    organization_id,
+    email,
+    full_name,
+    phone_number,
+    role,
+    is_email_verified,
+    is_phone_verified,
+    preferences
+  )
+  VALUES (
+    NEW.id,
+    organization_id_value,
+    COALESCE(NEW.email, ''),
+    COALESCE(NEW.raw_user_meta_data->>'name', NEW.raw_app_meta_data->>'name', split_part(COALESCE(NEW.email, 'user'), '@', 1)),
+    NULLIF(COALESCE(NEW.raw_user_meta_data->>'phone', NEW.raw_app_meta_data->>'phone', ''), ''),
+    CASE
+      WHEN organization_role IN ('admin', 'manager', 'staff', 'viewer') THEN organization_role
+      WHEN organization_role IN ('inventory staff', 'sales staff') THEN organization_role
+      ELSE 'staff'
+    END,
+    COALESCE(NEW.email_confirmed_at IS NOT NULL, false),
+    COALESCE(NEW.phone_confirmed_at IS NOT NULL, false),
+    '{}'::jsonb
+  )
+  ON CONFLICT (id) DO UPDATE
+    SET organization_id = EXCLUDED.organization_id,
+        email = EXCLUDED.email,
+        full_name = EXCLUDED.full_name,
+        phone_number = EXCLUDED.phone_number,
+        role = EXCLUDED.role,
+        is_email_verified = EXCLUDED.is_email_verified,
+        is_phone_verified = EXCLUDED.is_phone_verified,
+        updated_at = CURRENT_TIMESTAMP;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
+
 -- Enable RLS on all tables
 ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE oauth_sessions ENABLE ROW LEVEL SECURITY;
@@ -348,3 +426,15 @@ CREATE POLICY activity_logs_select ON activity_logs
 CREATE POLICY activity_logs_insert ON activity_logs
   FOR INSERT TO authenticated
   WITH CHECK (organization_id IN (SELECT organization_id FROM user_profiles WHERE id = auth.uid()) AND user_id = auth.uid());
+
+-- Ensure staff can only read their own activity logs while managers/admins can see their organization
+DROP POLICY IF EXISTS activity_logs_select ON activity_logs;
+CREATE POLICY activity_logs_select ON activity_logs
+  FOR SELECT TO authenticated
+  USING (
+    organization_id IN (SELECT organization_id FROM user_profiles WHERE id = auth.uid())
+    AND (
+      (SELECT role FROM user_profiles WHERE id = auth.uid()) IN ('admin', 'manager')
+      OR user_id = auth.uid()
+    )
+  );

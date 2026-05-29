@@ -29,7 +29,7 @@ export interface AuthUser {
   email: string;
   organizationId: string;
   organizationName: string;
-  role: "Admin" | "Manager" | "Staff";
+  role: "Admin" | "Manager" | "Staff" | "Inventory Staff" | "Sales Staff" | "Viewer";
   name: string;
   createdAt: string;
 }

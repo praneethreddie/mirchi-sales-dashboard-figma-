@@ -26,14 +26,6 @@ type InviteRequest = {
   inviterName?: string;
 };
 
-type CallerContext = {
-  organizationId?: string;
-  organizationName?: string;
-  role?: string;
-  name?: string;
-  email?: string;
-};
-
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
     ...init,
@@ -53,7 +45,6 @@ serve(async (req: Request) => {
     const phone = body.phone?.trim() || null;
     const role = body.role?.trim();
     const organizationId = body.organizationId?.trim();
-    const organizationName = body.organizationName?.trim() || "Organization";
     const inviterName = body.inviterName?.trim() || "Admin";
 
     if (!email || !password || !role || !organizationId) {
@@ -82,14 +73,23 @@ serve(async (req: Request) => {
       return json({ error: "unauthorized" }, { status: 401 });
     }
 
-    const callerMeta = callerData.user.user_metadata as CallerContext | undefined;
-    const callerOrganizationId = callerMeta?.organizationId?.trim();
+    const { data: callerProfile, error: callerProfileError } = await supabaseAdmin
+      .from("user_profiles")
+      .select("organization_id, full_name, role")
+      .eq("id", callerData.user.id)
+      .maybeSingle();
+
+    if (callerProfileError || !callerProfile) {
+      return json({ error: "caller_profile_not_found" }, { status: 404 });
+    }
+
+    const callerOrganizationId = callerProfile.organization_id?.trim?.() || callerProfile.organization_id;
 
     if (!callerOrganizationId || callerOrganizationId !== organizationId) {
       return json({ error: "forbidden_wrong_organization" }, { status: 403 });
     }
 
-    const callerRole = (callerMeta?.role || "").toLowerCase();
+    const callerRole = (callerProfile.role || "").toLowerCase();
     if (callerRole !== "admin") {
       return json({ error: "forbidden_admin_only" }, { status: 403 });
     }
@@ -109,16 +109,27 @@ serve(async (req: Request) => {
       return json({ error: "organization_not_found" }, { status: 404 });
     }
 
+    const requestedOrganizationName = body.organizationName?.trim();
+    if (requestedOrganizationName && requestedOrganizationName !== existingOrg.name) {
+      return json({ error: "organization_mismatch" }, { status: 403 });
+    }
+
     const { data, error } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
       user_metadata: {
         organizationId,
-        organizationName,
+        organizationName: body.organizationName?.trim() || "Organization",
         role,
         name,
         phone,
+      },
+      app_metadata: {
+        organizationId,
+        organizationName: body.organizationName?.trim() || "Organization",
+        role,
+        name,
       },
     });
 
