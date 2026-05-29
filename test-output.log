@@ -1,0 +1,28 @@
+
+Γó░Γí╛Γó╢ΓúñΓíÇΓáÇΓáÇΓúÇΓú┤Γá╛Γó╢ΓíéΓáÇΓáÇΓóáΓúñΓúñΓúñΓúñΓúñΓáäΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓúÇΓíÇΓáÇΓóÇΓúáΓúñΓúñΓúäΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓóáΓúñΓáÇΓóÇΓíÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇ
+Γó╜ΓíâΓáÇΓóêΓú¢Γí╖Γú╛ΓúÖΓáüΓáÇΓó╝ΓíÅΓáÇΓáÇΓáêΓáêΓó╕Γí┐ΓáüΓóíΓú╡Γó┤ΓúñΓíäΓóÇΓí┤Γá┤ΓúñΓíäΓúªΓú┐Γú╖ΓíäΓó╛ΓúÅΓúÇΓíêΓá¢ΓáúΓúªΓúäΓú┤Γú┤ΓúñΓíÇΓú┤ΓúäΓúñΓíªΓú░Γí╡Γó░Γú╜Γú┐ΓíäΓóÇΓú┤Γí┤ΓúñΓíä
+Γó╣ΓúçΓú╢ΓáƒΓáïΓáüΓáêΓá¢Γá╖ΓóåΓúÿΓáâΓáÇΓáÇΓáÇΓáÇΓó╜ΓíçΓóáΓú┐ΓóªΓóªΓá╛ΓíùΓá╣Γó┐Γú╢Γú¼ΓíüΓó¿Γú┐ΓáÇΓáÇΓíêΓáÖΓá¢Γá╗Γú┐ΓíäΓú║ΓíÅΓáÇΓáÇΓó╜ΓíçΓó╕Γú┐ΓáÇΓáÇΓú╗ΓíçΓáÇΓú┐ΓáàΓóáΓú┐ΓóºΓáªΓí╛Γá┐
+ΓáÇΓáëΓá▓Γó╢ΓúñΓúÇΓúäΓú┤Γá╛Γá¢ΓáüΓáÇΓáÇΓáÇΓáÇΓááΓó┐ΓáâΓáêΓá┐ΓíªΓíªΓá╢ΓáéΓá╖ΓíªΓíªΓá┐ΓáüΓá╝Γó╖Γó┤ΓáÿΓá┐Γí╢Γí┤Γí┤ΓáƒΓáÇΓú╛Γí┐ΓóªΓá╛ΓáƒΓáüΓó╕ΓáƒΓáÇΓáÇΓí┐ΓáâΓáÉΓí┐Γó╡ΓáêΓá┐ΓíªΓíªΓá╢Γáâ
+ΓáÇΓáÇΓáÇΓáÇΓáêΓáëΓáëΓáêΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓóÉΓú┐ΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇΓáÇ
+
+Starting test execution...
+Test execution completed.
+Execution lock released.
+
+Server will remain active for 1 hour. Press Ctrl+C to exit early.
+[2026-05-29T04:39:20.783Z] [WARN] [TunnelClient] Control websocket closed (code=1006, reason=<empty>)
+[2026-05-29T04:39:20.565Z] [WARN] [TunnelClient] Tunnel tcp closed: tunnel_zOBjvK0Ww6GfU1L7
+[2026-05-29T04:58:40.800Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T04:58:44.794Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T04:59:41.116Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T04:59:44.801Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T05:00:41.111Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T05:00:44.806Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T05:01:40.803Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T05:01:44.794Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T05:02:41.105Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T05:02:44.919Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T05:03:40.793Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[2026-05-29T05:03:44.948Z] [ERROR] readConfig error: Error: ENOENT: no such file or directory, open 'd:\Downloads\Sales and Inventory Management System\testsprite_tests\tmp\config.json'
+[32mTest execution completed[0m
+The AI assistant will generate a report for you.

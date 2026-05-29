@@ -1,0 +1,13 @@
+{
+  "tasks": {
+    "start": "deno run -A --watch=supabase/functions/ supabase/functions/main.ts"
+  },
+  "imports": {
+    "std/": "https://deno.land/std@0.208.0/",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.38.0"
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"]
+  }
+}

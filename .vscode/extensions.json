@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "denoland.vscode-deno",
+    "GitHub.copilot",
+    "esbenp.prettier-vscode"
+  ]
+}
